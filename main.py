@@ -29,15 +29,15 @@ while not done:
                 drawGrid(grid,background)
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 4: #Mouse wheel rolled away from body
-                background=zoom(surface,original_background,False)
+                background,scale=zoom(surface,original_background,False)
             elif event.button == 5: #Mouse wheel rolled towards body
-                background=zoom(surface,original_background,True)
+                background,scale=zoom(surface,original_background,True)
             else: #Left or right mouse click
                 pos = pygame.mouse.get_pos()
-                selected = markClicked(pos,grid,water,selected)
+                selected = markClicked(pos,grid,water,selected,scale)
 
     surface.blit(background, (0, 0))
-    drawMarkings(grid,surface)
+    drawMarkings(grid,surface,scale)
     pygame.display.flip()
     clock.tick(10)
 pygame.quit()

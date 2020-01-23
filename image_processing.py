@@ -21,7 +21,7 @@ def zoom(screen, og_background, zoom_in):
     #smoothscale (as opposed to scale) gives a smoother (aka
     #blurrier) feel when zoomed in, but I like it. It looks
     #soft
-    return pygame.transform.smoothscale(og_background,(w,h))
+    return pygame.transform.smoothscale(og_background,(w,h)),scale
 
 
 def load_image(name, colorkey=None):
@@ -119,7 +119,7 @@ def drawGrid(grid,surface):
             col.drawExtras(surface)
 
 
-def drawMarkings(grid,surface):
+def drawMarkings(grid,surface,scale):
     for row in grid:
         for col in row:
-            col.drawMarkings(surface)
+            col.drawMarkings(surface,scale)

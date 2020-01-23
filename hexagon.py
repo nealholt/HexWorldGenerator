@@ -1,5 +1,6 @@
 from pygame import draw, Rect, quit
 from functions import *
+from constants import scale
 
 class Hexagon:
     def __init__(self, row, col, elevation, temperature):
@@ -20,7 +21,7 @@ class Hexagon:
         #debugging road drawing and neighbor calculation
         self.marked = None
 
-    def getX(self):
+    def getX(self,scale=100):
         image_width = self.img.get_rect().width
         #I don't know why these fudge factors are needed
         #probably something to do with the image widths
@@ -28,13 +29,13 @@ class Hexagon:
         #of the tiles. In any case, this works.
         if self.row%2==0:
             fudge_factor = self.col*2+2
-            return x_offset+self.col*(image_width+gap)-fudge_factor
+            return int((x_offset+self.col*(image_width+gap)-fudge_factor)*scale/100)
         else:
             fudge_factor = self.col*2
-            return self.col*(image_width+gap)-fudge_factor
+            return int((self.col*(image_width+gap)-fudge_factor)*scale/100)
 
-    def getY(self):
-        return self.row*height_adjust
+    def getY(self,scale=100):
+        return int((self.row*height_adjust)*scale/100)
 
     def isWater(self):
         return self.elevation<shallows_cutoff
@@ -78,35 +79,31 @@ class Hexagon:
         if self.road_image != None:
             surface.blit(self.road_image, (self.getX(),self.getY()))
 
-    def getRect(self):
+    def getRect(self, scale):
         w = self.img.get_rect().width
         #Make adjustments so the hitbox is actually what
         #it seems to be
-        return Rect(self.getX()+hex_box_adjust,
-                    self.getY()+height_adjust+hex_box_adjust+box_height_adjust,
-                    w-2*hex_box_adjust,
-                    w-hex_box_adjust)
+        x = int(self.getX(scale)+hex_box_adjust*scale/100)
+        y =int(self.getY(scale)+(height_adjust+hex_box_adjust+box_height_adjust)*scale/100)
+        width = int((w-2*hex_box_adjust)*scale/100)
+        height = int((w-hex_box_adjust)*scale/100)
+        return Rect(x,y,width,height)
 
-    def drawMarkings(self,surface):
+    def drawMarkings(self,surface,scale):
         if self.selected:
-            #Draw a circle on this hexagon
-            #radius = int(x_offset/2)
-            #center = hex_box_adjust+self.getX()+radius, hex_box_adjust+self.getY()+radius+height_adjust
-            #draw.circle(surface, (255,0,0), center, radius, 3)
-
             #Draw a rectangle that matches the hitbox
-            r = self.getRect()
+            r = self.getRect(scale)
             draw.rect(surface, (255,0,0), r, 3)
-
         if self.marked != None:
             #Draw a circle on this hexagon
-            radius = int(x_offset/2)
-            center = hex_box_adjust+self.getX()+radius, hex_box_adjust+self.getY()+radius+height_adjust
+            radius = int((x_offset/2)*scale/100)
+            center = int(hex_box_adjust*scale/100+self.getX(scale)+radius), \
+                    int(hex_box_adjust*scale/100+self.getY(scale)+radius+height_adjust*scale/100)
             draw.circle(surface, self.marked, center, radius, 3)
 
 
-    def collidePoint(self, pos):
-        r = self.getRect()
+    def collidePoint(self, pos, scale):
+        r = self.getRect(scale)
         return r.collidepoint(pos)
 
     def setImage(self, frames):

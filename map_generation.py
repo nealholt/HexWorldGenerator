@@ -158,7 +158,7 @@ def setImages(grid, frames):
             grid[row][col].setImage(frames)
 
 
-def markClicked(pos,grid,oceans,selected):
+def markClicked(pos,grid,oceans,selected,scale):
     #Erase previous mark and selection
     if selected != None:
         selected.selected = False
@@ -167,7 +167,7 @@ def markClicked(pos,grid,oceans,selected):
         #    grid[r][c].marked = None
         resetMarked(grid)
     #Get new selected
-    selected = getClicked(pos, grid)
+    selected = getClicked(pos, grid, scale)
     if selected != None:
         #print(selected.road_directions)
         selected.selected = True

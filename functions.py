@@ -126,10 +126,10 @@ def getHexDistance(r1, c1, r2, c2):
         return row_diff + int(col_diff/2)
 
 
-def getClicked(pos, grid):
+def getClicked(pos, grid, scale):
     for i in range(row_count):
         for j in range(col_count):
-            if grid[i][j].collidePoint(pos):
+            if grid[i][j].collidePoint(pos, scale):
                 return grid[i][j]
     return None
 
