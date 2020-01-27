@@ -45,7 +45,7 @@ cell_variation_max = 1.2
 #Used for the heat-flow-like smoothing of terrain.
 #Upper and lower bound on the random number of smoothing passes
 #to run.
-smoothing_passes_min = 1
+smoothing_passes_min = 2
 smoothing_passes_max = 7
 #Upper and lower bound on the random amount to emphasize central
 #cell value when smoothing
