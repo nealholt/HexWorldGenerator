@@ -236,8 +236,34 @@ def getPathableNeighbors(cell,grid,oceans):
                     neighbor_list.append((grid[rn][cn],direction))
     return neighbor_list
 
+def getTravelCost(start,end):
+    '''start and end are both cells. Return the cost to travel from
+    start to end'''
+    #If moving from water to water then movement is free
+    if start.isWater() and end.isWater():
+        cost = 0
+    #If moving from water to land then movement cost
+    #is just the destination.
+    elif start.isWater() and not end.isWater():
+        #Cost factors in terrain
+        cost = int(end.getMovementCost()/2)
+        #Reduce the cost for every road already connecting through this cell
+        cost -= len(end.road_directions)*multi_road_reduction
+    #If moving from land to water then movement cost
+    #is the port_cost and half the current terrain cost.
+    elif not start.isWater() and end.isWater():
+        #Cost factors in terrain
+        cost = int(end.getMovementCost()/2) + port_cost
+    else: #Moving from land to land
+        #Cost factors in terrain
+        cost = int((end.getMovementCost() + start.getMovementCost())/2)
+        #Reduce the cost for every road already connecting through this cell
+        cost -= len(end.road_directions)*multi_road_reduction
+    return cost
+
+
 def calcShortestPath(coords1,coords2,grid,oceans):
-    '''Do a weighted breadth first search to find shortest path.
+    '''Do a greedy search to find shortest path.
     Don't path through water for now.'''
     r,c = coords1 #Starting location
     r_end,c_end = coords2 #ending_location
@@ -278,45 +304,13 @@ def calcShortestPath(coords1,coords2,grid,oceans):
             #Calculate distance cost once then keep it in upcoming
             #so you don't have to keep recalculating it.
             distance_cost = getHexDistance(destination.row,destination.col,r_end,c_end)*dist_cost
-            #If moving from water to water then movement is free
+            #Factor terrain and water into the total cost
+            total_cost += getTravelCost(cell,destination)
+            #If moving from water to water then use the source cell
+            #instead of a direction since direction is irrelevant.
             if cell.isWater() and destination.isWater():
-                #Add this neighbor to the upcoming list. Since
-                #this is water, add the source cell instead
-                #of a direction since direction is irrelevant.
-                upcoming.append((destination.row,destination.col,total_cost,cell,distance_cost))
-                #Sanity check
-                if not areBothWater(cell,destination):
-                    raise Exception('Should be both water, but are not.')
-            #If moving from water to land then movement cost
-            #is just the destination.
-            elif cell.isWater() and not destination.isWater():
-                #Cost factors in terrain and distance
-                total_cost += int(destination.getMovementCost()/2)
-                #Reduce the cost for every road already connecting through this cell
-                total_cost -= len(destination.road_directions)*multi_road_reduction
-                #Add this neighbor to the upcoming list
-                upcoming.append((destination.row,destination.col,total_cost,direction,distance_cost))
-                #Sanity check
-                if areBothWater(cell,destination):
-                    raise Exception('Should not both be water, but are.')
-                x = direction + 1 #SANITY CHECK: direction must be a number and not a cell
-            #If moving from land to water then movement cost
-            #is the port_cost and half the current terrain cost.
-            elif not cell.isWater() and destination.isWater():
-                #Cost factors in terrain and distance
-                total_cost += int(destination.getMovementCost()/2) + port_cost
-                #Add this neighbor to the upcoming list
-                upcoming.append((destination.row,destination.col,total_cost,direction,distance_cost))
-                #Sanity check
-                if areBothWater(cell,destination):
-                    raise Exception('Should not both be water, but are.')
-            else: #Moving from land to land
-                #Cost factors in terrain and distance
-                total_cost += int((destination.getMovementCost() + cell.getMovementCost())/2)
-                #Reduce the cost for every road already connecting through this cell
-                total_cost -= len(destination.road_directions)*multi_road_reduction
-                #Add this neighbor to the upcoming list
-                upcoming.append((destination.row,destination.col,total_cost,direction,distance_cost))
+                direction = cell
+            upcoming.append((destination.row,destination.col,total_cost,direction,distance_cost))
     print('Warning: Failed to find path in calcShortestPath(',coords1,',',coords2,')')
     return []
 
@@ -409,7 +403,7 @@ def calculateCityPaths(grid,city_locations,oceans):
     #Loop through each city and recurse
     for i in range(len(city_locations)-1):
         for j in range(i+1,len(city_locations)):
-            #Do a breadth-first weighted shortest path search
+            #Do a greedy shortest path search
             path = calcShortestPath(city_locations[i],city_locations[j],grid,oceans)
             #Gracefully handle pathing failure
             if len(path) == 0:
@@ -419,7 +413,7 @@ def calculateCityPaths(grid,city_locations,oceans):
             with last item in path, but don't use it. follow
             inverse directions back through cells in the path.
             path contains more than we need because it's
-            constructed with a breadth first search.
+            constructed with a greedy search.
             The goal below is to walk through path backwards
             painting roads only where they are needed.'''
             #The last cell in path should be the destination
