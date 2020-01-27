@@ -238,7 +238,8 @@ def getPathableNeighbors(cell,grid,oceans):
 
 def getTravelCost(start,end):
     '''start and end are both cells. Return the cost to travel from
-    start to end'''
+    start to end. Order matters. The cost of start,end is not
+    necessarilly the same as the cost of end,start.'''
     #If moving from water to water then movement is free
     if start.isWater() and end.isWater():
         cost = 0
