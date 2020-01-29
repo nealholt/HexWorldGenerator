@@ -50,11 +50,10 @@ def strip_from_sheet():
     '''Strips individual frames from specific sprite sheet.
     This function has been modified oddly to work with this
     particular quirky sprite sheet.'''
-    sheet,_ = load_image('images/fantasyhextiles_v3.png', -1)
-
+    sheet,_ = load_image('images/UECvRdS_copy.png', -1)
     r = sheet.get_rect()
-    rows = 6
-    columns = 8
+    rows = 10
+    columns = 15
     img_width = r.w/columns
     img_height = r.h/rows
     frames = []
@@ -62,12 +61,6 @@ def strip_from_sheet():
         for col in range(columns):
             rect = pygame.Rect(col*img_width, 1+row*img_height, img_width, img_height-1)
             frames.append(sheet.subsurface(rect))
-
-    #Delete the last 7 frames because this particular sprite
-    #sheet is empty there.
-    for _ in range(7):
-        del frames[-1]
-
     return frames
 
 
