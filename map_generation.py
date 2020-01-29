@@ -354,12 +354,6 @@ def setRoadImages(grid, port_east, port_west):
             #facing the right direction
             if cell.is_port:
                 setPortImage(grid, cell, port_east, port_west)
-                '''r1,c1=cell.getRowCol(NORTHWEST)
-                r2,c2=cell.getRowCol(SOUTHWEST)
-                if not grid[r1][c1].isWater() or not grid[r2][c2].isWater():
-                    cell.img = port_east
-                else:
-                    cell.img = port_west'''
             #else if this cell has a road and is not a city
             elif len(cell.road_directions)>1 and cell.city_level==0:
                 #Find the image index of the road.
@@ -473,7 +467,7 @@ def resetGrid(frames):
     setImages(grid, frames)
     print('Set all images')
     #Set road images
-    setRoadImages(grid, frames[36], frames[37])
+    setRoadImages(grid, frames[port_east], frames[port_west])
     print('Grid creation complete.')
     return grid,water
 

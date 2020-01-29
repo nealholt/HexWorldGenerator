@@ -122,77 +122,77 @@ class Hexagon:
     def setCityImage(self,frames):
         if self.temperature<snow_cutoff or self.elevation>elevated_cutoff:
             if self.city_level > 2:
-                self.img = frames[23] #snow castle
+                self.img = frames[snow_castle]
             else:
-                self.img = frames[22] #snow town
+                self.img = frames[snow_town]
         elif self.temperature<temperate_cutoff:
             if self.city_level > 2:
-                self.img = frames[10] #stone walled town
+                self.img = frames[town_stone_wall]
             elif self.city_level > 1:
-                self.img = frames[9] #wood walled town
+                self.img = frames[town_wood_wall]
             else:
-                self.img = frames[8] #town
+                self.img = frames[town]
         else:
             if self.city_level > 2:
-                self.img = frames[31] #desert walled town
+                self.img = frames[desert_town_stone_wall]
             elif self.city_level > 1:
-                self.img = frames[30] #desert town
+                self.img = frames[desert_town_wood_wall]
             else:
-                self.img = frames[29] #desert hut
+                self.img = frames[desert_town]
 
     def setOceanImage(self,frames):
         if self.elevation<ocean_cutoff:
-            self.img = frames[7] #deep ocean
+            self.img = frames[ocean]
         elif self.elevation<shallows_cutoff:
             if self.temperature<snow_cutoff:
-                self.img = frames[21] #icy shallow ocean
+                self.img = frames[shallows_icey]
             else:
-                self.img = frames[6] #shallow ocean
+                self.img = frames[shallows]
 
     def setPlainsImage(self,frames):
         if self.temperature<snow_cutoff:
             if self.foliage >= max_foliage-1:
-                self.img = frames[18] #snow forest
+                self.img = frames[plains_snow_forest]
             elif self.foliage == max_foliage-2:
-                self.img = frames[17] #snow sparse forest
+                self.img = frames[plains_snow_sparse_forest]
             else:
-                self.img = frames[16] #snow plains
+                self.img = frames[plains_snow]
         elif self.temperature<temperate_cutoff:
             if self.foliage == max_foliage:
-                self.img = frames[32] #deep green forest
+                self.img = frames[plains_deep_forest]
             elif self.foliage == max_foliage-1:
-                self.img = frames[2] #forest
+                self.img = frames[plains_forest1]
             elif self.foliage == max_foliage-2:
-                self.img = frames[1] #sparse forest
+                self.img = frames[plains_sparse_forest]
             else:
-                self.img = frames[0] #plains
+                self.img = frames[plains_smooth]
         elif self.temperature<deep_desert_cutoff:
             if self.foliage > max_foliage-2:
-                self.img = frames[11] #greening desert
+                self.img = frames[desert_greenish]
             else:
-                self.img = frames[24] #desert plains
+                self.img = frames[desert1]
         else:
             if self.foliage > max_foliage-1:
-                self.img = frames[11] #greening desert
+                self.img = frames[desert_trees]
             else:
-                self.img = frames[26] #desert dunes
+                self.img = frames[desert_rolling]
 
     def setElevatedImage(self,frames):
         if self.temperature<snow_cutoff:
             if self.foliage > max_foliage-2:
-                self.img = frames[20] #snow elevated forest
+                self.img = frames[elevated_snow_forest]
             else:
-                self.img = frames[19] #snow elevated
+                self.img = frames[elevated_snow]
         elif self.temperature<temperate_cutoff:
             if self.foliage > max_foliage-2:
-                self.img = frames[4] #elevated forest
+                self.img = frames[elevated_forest1]
             else:
-                self.img = frames[3] #elevated
+                self.img = frames[elevated_rocky1]
         else:
-            self.img = frames[25] #desert elevated
+            self.img = frames[elevated_desert1]
 
     def setMountainImage(self,frames):
         if self.temperature<temperate_cutoff:
-            self.img = frames[5] #mountain
+            self.img = frames[mountain_snow]
         else:
-            self.img = frames[27] #desert mountain
+            self.img = frames[mountain_desert]
