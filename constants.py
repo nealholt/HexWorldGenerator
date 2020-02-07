@@ -232,6 +232,22 @@ SOUTHEAST = 5
 inverse_neighbor_order = [SOUTH, NORTH, SOUTHEAST, SOUTHWEST, NORTHEAST, NORTHWEST]
 DIRECTIONS = inverse_neighbor_order
 
+def directionToEnglish(direction):
+    if direction==NORTH:
+        return 'north'
+    elif direction==SOUTH:
+        return 'south'
+    elif direction==NORTHWEST:
+        return 'northwest'
+    elif direction==NORTHEAST:
+        return 'northeast'
+    elif direction==SOUTHWEST:
+        return 'southwest'
+    elif direction==SOUTHEAST:
+        return 'southeast'
+    else:
+        print('ERROR in constants.directionToEnglish direction '+str(direction)+' not recognized.')
+
 #Incomplete mapping between directions and road image indices.
 #Example: the index 0 image is the road connecting north and south.
 #Indicies in the list below match indicies in the road images

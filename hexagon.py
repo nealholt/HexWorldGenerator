@@ -1,6 +1,6 @@
 from pygame import draw, Rect, quit
 from functions import *
-from constants import scale
+from constants import scale, directionToEnglish
 
 class Hexagon:
     def __init__(self, row, col, elevation, temperature):
@@ -199,3 +199,15 @@ class Hexagon:
         else:
             self.img_type=mountain_desert
 
+    def getInfo(self):
+        to_return = "\nImage type: "+str(self.img_type)
+        to_return += "\nRow:"+str(self.row)+". Col:"+str(self.col)
+        to_return += "\nElevation:"+str(self.elevation)
+        to_return += "\nTemperature:"+str(self.temperature)
+        to_return += "\nFoliage:"+str(self.foliage)
+        to_return += "\nCity:"+str(self.city_level)
+        to_return += "\nPort:"+str(self.is_port)
+        to_return += "\nDirections:"
+        for d in self.road_directions:
+            to_return += "\n\t"+directionToEnglish(d)
+        return to_return

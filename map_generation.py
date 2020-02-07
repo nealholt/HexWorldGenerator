@@ -166,15 +166,59 @@ def markClicked(pos,grid,oceans,selected,scale):
         #for r,c in neighbors:
         #    grid[r][c].marked = None
         resetMarked(grid)
+    #Store previous selected to mark shortest path between points
+    old_selected = selected
     #Get new selected
     selected = getClicked(pos, grid, scale)
     if selected != None:
-        #print(selected.road_directions)
+        #Print information about this hex
+        print(selected.getInfo())
         selected.selected = True
         #mark all the neighbors
         neighbors = getPathableNeighbors(selected,grid,oceans)
         for n,_ in neighbors:
             grid[n.row][n.col].marked = (0,255,0)
+            #Print cost to each neighbor
+            #TODO LEFT OFF HERE get Cal's direction function to
+            #also get information on the cost in each direction
+            print("Travel Cost:"+str(getTravelCost(selected,n)))
+    #If both old selected and new selected are not None
+    #mark and print the travel cost between them
+    if selected!=None and old_selected!=None:
+        path = calcShortestPath((selected.row,selected.col),(old_selected.row,old_selected.col),grid,oceans)
+        #TODO LEFT OFF HERE
+        #The following code is duplicated from getCityPath
+        #minus the parts that mark roads. You should extract
+        #this into a function that gets an ordered list of
+        #hexes then lays down the roads using cal's direction
+        #to hex function. This should also make it easier
+        #to print the path's cost.
+        #The last cell in path should be the destination
+        cell,direction = path.pop(len(path)-1)
+        #Invert direction to find the next cell to travel to
+        direction = invertDirection(direction)
+        #r,c are the row,col of the next cell to travel to
+        r,c = cell.getRowCol(direction)
+        grid[r][c].marked = (100,255,200)
+        #Repeat until we reach destination
+        while grid[r][c] != selected:
+            #Pop the next cell out of path.
+            for k in range(len(path)):
+                if path[k][0] == grid[r][c]:
+                    cell,direction = path.pop(k)
+                    break
+            grid[r][c].marked = (100,255,200)
+            #While they are both water, keep popping.
+            if areBothWater(cell,direction):
+                cell,direction = handleWaterInPath(cell,direction,path)
+                r = cell.row
+                c = cell.col
+                grid[r][c].marked = (100,255,200)
+            #Use inverted direction to find next.
+            direction = invertDirection(direction)
+            r,c = cell.getRowCol(direction)
+            grid[r][c].marked = (100,255,200)
+
     return selected
 
 def shortPathHelper(grid,upcoming,r_end,c_end):
