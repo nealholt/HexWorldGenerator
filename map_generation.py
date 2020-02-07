@@ -195,6 +195,13 @@ def markClicked(pos,grid,oceans,selected,scale):
         #to print the path's cost.
         #The last cell in path should be the destination
         cell,direction = path.pop(len(path)-1)
+        #This if is needed so you can select paths that start
+        #on water.
+        if areBothWater(cell,direction):
+            cell,direction = handleWaterInPath(cell,direction,path)
+            r = cell.row
+            c = cell.col
+            grid[r][c].marked = (100,255,200)
         #Invert direction to find the next cell to travel to
         direction = invertDirection(direction)
         #r,c are the row,col of the next cell to travel to
@@ -281,27 +288,33 @@ def getPathableNeighbors(cell,grid,oceans):
     return neighbor_list
 
 def getTravelCost(start,end):
-    '''start and end are both cells. Return the cost to travel from
-    start to end. Order matters. The cost of start,end is not
-    necessarilly the same as the cost of end,start.'''
+    '''start and end are both cells. Return the cost to
+    travel from start to end. Order matters. The cost of
+    start,end is not necessarilly the same as the cost
+    of end,start.'''
+    #This initial penalty is needed so that the cost reduction
+    #from traveling over roads doesn't make the cost negative
+    #thereby causing the pathing to take extra journeys over
+    #roads that it doesn't need to take.
+    cost = path_penalty
     #If moving from water to water then movement is free
     if start.isWater() and end.isWater():
-        cost = 0
+        pass
     #If moving from water to land then movement cost
     #is just the destination.
     elif start.isWater() and not end.isWater():
         #Cost factors in terrain
-        cost = int(end.getMovementCost()/2)
+        cost += int(end.getMovementCost()/2)
         #Reduce the cost for every road already connecting through this cell
         cost -= len(end.road_directions)*multi_road_reduction
     #If moving from land to water then movement cost
     #is the port_cost and half the current terrain cost.
     elif not start.isWater() and end.isWater():
         #Cost factors in terrain
-        cost = int(end.getMovementCost()/2) + port_cost
+        cost += int(end.getMovementCost()/2) + port_cost
     else: #Moving from land to land
         #Cost factors in terrain
-        cost = int((end.getMovementCost() + start.getMovementCost())/2)
+        cost += int((end.getMovementCost() + start.getMovementCost())/2)
         #Reduce the cost for every road already connecting through this cell
         cost -= len(end.road_directions)*multi_road_reduction
     return cost
@@ -344,7 +357,7 @@ def calcShortestPath(coords1,coords2,grid,oceans):
         for neighbor in neighbor_list:
             #make cost cumulative by initializing total cost
             #to the cost of the most recently popped cell.
-            total_cost = cost + path_penalty #TODO LEFT OFF HERE - cost calculation needs turned into functions. hexagons have a travel cost function but it doesn't account for this penalty or the cost of moving between cells. There need to be functions for those sorts of things.
+            total_cost = cost
             destination,direction = neighbor
             #Calculate distance cost once then keep it in upcoming
             #so you don't have to keep recalculating it.

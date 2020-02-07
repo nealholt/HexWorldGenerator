@@ -224,7 +224,7 @@ multi_road_reduction = 1
 #when ever a path gets longer. This seems to be a good fix
 #for some bizarre pathing that added extra roads to get
 #the road cheapness bonus.
-path_penalty = 2
+path_penalty = 6
 
 #Neighbors are gotten in this order: N, S, NW, NE, SW, SE
 #The inverse is needed for pathing.
