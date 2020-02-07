@@ -344,7 +344,7 @@ def calcShortestPath(coords1,coords2,grid,oceans):
         for neighbor in neighbor_list:
             #make cost cumulative by initializing total cost
             #to the cost of the most recently popped cell.
-            total_cost = cost
+            total_cost = cost + path_penalty #TODO LEFT OFF HERE - cost calculation needs turned into functions. hexagons have a travel cost function but it doesn't account for this penalty or the cost of moving between cells. There need to be functions for those sorts of things.
             destination,direction = neighbor
             #Calculate distance cost once then keep it in upcoming
             #so you don't have to keep recalculating it.
