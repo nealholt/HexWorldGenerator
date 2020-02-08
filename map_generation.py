@@ -3,6 +3,38 @@ from image_processing import *
 from oceans import OceanManager
 pygame.init()
 
+
+def getDirection(r1, c1, r2, c2):
+    if r1 - 2 == r2 and c1 == c2:
+        return NORTH
+    elif r1 + 2 == r2 and c1 == c2:
+        return SOUTH
+    elif r1%2 == 0:
+        if r1 - 1 == r2 and c1 == c2:
+            return NORTHWEST
+        elif r1 - 1 == r2 and c1 + 1 == c2:
+            return NORTHEAST
+        elif r1 + 1 == r2 and c1 == c2:
+            return SOUTHWEST
+        elif r1 + 1 == r2 and c1 + 1 == c2:
+            return SOUTHEAST
+        else:
+            #Throw custom error
+            raise Exception("ERROR: getDirection between two non-adjacent cells")
+    else:
+        if r1 - 1 == r2 and c1 - 1 == c2:
+            return NORTHWEST
+        elif r1 - 1 == r2 and c1 == c2:
+            return NORTHEAST
+        elif r1 + 1 == r2 and c1 - 1 == c2:
+            return SOUTHWEST
+        elif r1 + 1 == r2 and c1 == c2:
+            return SOUTHEAST
+        else:
+            #Throw custom error
+            raise Exception("ERROR: getDirection between two non-adjacent cells")
+
+
 def createGrid():
     grid = []
     for row in range(row_count):
@@ -174,14 +206,13 @@ def markClicked(pos,grid,oceans,selected,scale):
         #Print information about this hex
         print(selected.getInfo())
         selected.selected = True
-        #mark all the neighbors
+        #mark all the neighbors and print their travel costs
         neighbors = getPathableNeighbors(selected,grid,oceans)
         for n,_ in neighbors:
             grid[n.row][n.col].marked = (0,255,0)
             #Print cost to each neighbor
-            #TODO LEFT OFF HERE get Cal's direction function to
-            #also get information on the cost in each direction
-            print("Travel Cost:"+str(getTravelCost(selected,n)))
+            english_direction=directionToEnglish(getDirection(selected.row,selected.col,n.row,n.col))
+            print("Cost to "+english_direction+":"+str(getTravelCost(selected,n)))
     #If both old selected and new selected are not None
     #mark and print the travel cost between them
     if selected!=None and old_selected!=None:
