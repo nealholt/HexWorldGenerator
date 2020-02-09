@@ -217,46 +217,11 @@ def markClicked(pos,grid,oceans,selected,scale):
     #mark and print the travel cost between them
     if selected!=None and old_selected!=None:
         path = calcShortestPath((selected.row,selected.col),(old_selected.row,old_selected.col),grid,oceans)
-        #TODO LEFT OFF HERE
-        #The following code is duplicated from getCityPath
-        #minus the parts that mark roads. You should extract
-        #this into a function that gets an ordered list of
-        #hexes then lays down the roads using cal's direction
-        #to hex function. This should also make it easier
-        #to print the path's cost.
-        #The last cell in path should be the destination
-        cell,direction = path.pop(len(path)-1)
-        #This if is needed so you can select paths that start
-        #on water.
-        if areBothWater(cell,direction):
-            cell,direction = handleWaterInPath(cell,direction,path)
-            r = cell.row
-            c = cell.col
-            grid[r][c].marked = (100,255,200)
-        #Invert direction to find the next cell to travel to
-        direction = invertDirection(direction)
-        #r,c are the row,col of the next cell to travel to
-        r,c = cell.getRowCol(direction)
-        grid[r][c].marked = (100,255,200)
-        #Repeat until we reach destination
-        while grid[r][c] != selected:
-            #Pop the next cell out of path.
-            for k in range(len(path)):
-                if path[k][0] == grid[r][c]:
-                    cell,direction = path.pop(k)
-                    break
-            grid[r][c].marked = (100,255,200)
-            #While they are both water, keep popping.
-            if areBothWater(cell,direction):
-                cell,direction = handleWaterInPath(cell,direction,path)
-                r = cell.row
-                c = cell.col
-                grid[r][c].marked = (100,255,200)
-            #Use inverted direction to find next.
-            direction = invertDirection(direction)
-            r,c = cell.getRowCol(direction)
-            grid[r][c].marked = (100,255,200)
-
+        finalized_path = greedySearchPostProcessing(path, selected, grid)
+        for cell in finalized_path:
+            cell.marked = (100,255,200)
+            #TODO LEFT OFF HERE - calculate the total cost of
+            #this path and print it.
     return selected
 
 def shortPathHelper(grid,upcoming,r_end,c_end):
@@ -353,7 +318,16 @@ def getTravelCost(start,end):
 
 def calcShortestPath(coords1,coords2,grid,oceans):
     '''Do a greedy search to find shortest path.
-    Don't path through water for now.'''
+    Don't path through water for now.
+    This function does not return a list of hexagons.
+    Instead it returns a list of hexagon,direction
+    pairs, but not all of these pairs are actually
+    on the path. The list has to be processed by
+    walking from the end back to the start to find
+    the actual path and remove extraneous hexes.
+    In other words, this function returns all the
+    hex,direction pairs that were used in the greedy
+    search.'''
     r,c = coords1 #Starting location
     r_end,c_end = coords2 #ending_location
     path = [] #Store best path
@@ -478,6 +452,69 @@ def areBothWater(a,b):
     except:
         return False
 
+def greedySearchPostProcessing(path, destination, grid):
+    '''Pre: path is a list of hex,direction pairs.
+    destination is a hex.
+    grid is the 2d list of all hexes.
+    Post: This function pares down the path list from
+    calcShortestPath into a list of hexes, in order,
+    on the path from one place to another. The list of
+    hexes is returned.'''
+
+    '''path is a list of cell,direction pairs. start
+    with last item in path, but don't use it. follow
+    inverse directions back through cells in the path.
+    path contains more than we need because it's
+    constructed with a greedy search.
+    The goal below is to walk through path backwards
+    painting roads only where they are needed.'''
+    finalized_path = []
+    #The last cell in path should be the destination
+    cell,direction = path.pop(len(path)-1)
+    #This if is needed so you can select paths that start
+    #on water.
+    if areBothWater(cell,direction):
+        cell,direction = handleWaterInPath(cell,direction,path)
+        r = cell.row
+        c = cell.col
+        finalized_path.append(cell)
+    #Invert direction to find the next cell to travel to
+    direction = invertDirection(direction)
+    #r,c are the row,col of the next cell to travel to
+    r,c = cell.getRowCol(direction)
+    #Repeat until we reach destination
+    while grid[r][c] != destination:
+        #Pop the next cell out of path.
+        for k in range(len(path)):
+            if path[k][0] == grid[r][c]:
+                cell,direction = path.pop(k)
+                finalized_path.append(cell)
+                break
+        #While they are both water, keep popping.
+        if areBothWater(cell,direction):
+            cell,direction = handleWaterInPath(cell,direction,path)
+            r = cell.row
+            c = cell.col
+            finalized_path.append(cell)
+        #reached destination
+        #TODO LEFT OFF HERE I put this in to stop an
+        #unrecognized direction error on the invertDirection
+        #line below, but it still pops up. I'm confused about
+        #why -1 is still a direction. Print some info on this
+        #and try to debug it.
+        #TODO This worked when I clicked between two cells,
+        #but not when drawing roads. Maybe I'm passing in
+        #the wrong cell to use as the "destination".
+        #TODO you should really rename "destination" since it's
+        #the starting point, not the ending point, except that
+        #we walk through the path backwards so from this function's
+        #point of view it IS the destination.
+        if grid[r][c] == destination:
+            break
+        #Use inverted direction to find next.
+        direction = invertDirection(direction)
+        r,c = cell.getRowCol(direction)
+    return finalized_path
 
 def calculateCityPaths(grid,city_locations,oceans):
     '''city_locations is a list of row,column pairs of
@@ -492,37 +529,20 @@ def calculateCityPaths(grid,city_locations,oceans):
             if len(path) == 0:
                 print('WARNING: Pathing failed in map_generation.calculateCityPaths')
                 break
-            '''path is a list of cell,direction pairs. start
-            with last item in path, but don't use it. follow
-            inverse directions back through cells in the path.
-            path contains more than we need because it's
-            constructed with a greedy search.
-            The goal below is to walk through path backwards
-            painting roads only where they are needed.'''
-            #The last cell in path should be the destination
-            cell,direction = path.pop(len(path)-1)
-            #Invert direction to find the next cell to travel to
-            direction = invertDirection(direction)
-            #r,c are the row,col of the next cell to travel to
-            r,c = cell.getRowCol(direction)
-            grid[r][c].addDirection(invertDirection(direction))
-            #Repeat until we reach destination
-            while (r,c) != city_locations[i]:
-                #Pop the next cell out of path.
-                for k in range(len(path)):
-                    if path[k][0] == grid[r][c]:
-                        cell,direction = path.pop(k)
-                        break
-                #While they are both water, keep popping.
-                if areBothWater(cell,direction):
-                    cell,direction = handleWaterInPath(cell,direction,path)
-                    r = cell.row
-                    c = cell.col
-                #Use inverted direction to find next.
-                direction = invertDirection(direction)
-                grid[r][c].addDirection(direction)
-                r,c = cell.getRowCol(direction)
-                grid[r][c].addDirection(invertDirection(direction))
+            finalized_path = greedySearchPostProcessing(path, city_locations[i], grid)
+            #lay down roads along the path
+            for i in range(1, len(finalized_path)-1):
+                r1 = finalized_path[i].row
+                c1 = finalized_path[i].col
+                r2 = finalized_path[i+1].row
+                c2 = finalized_path[i+1].col
+                direction = getDirection(r1, c1, r2, c2)
+                grid[r1][c1].addDirection(direction)
+                grid[r2][c2].addDirection(invertDirection(direction))
+                #TODO LEFT OFF HERE
+            #Then lay down ports and have ports reduce the path cost
+            #delete the other code that lays down ports. It's not needed anymore.
+
 
 
 def resetGrid(frames):
