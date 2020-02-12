@@ -21,6 +21,7 @@ def getDirection(r1, c1, r2, c2):
             return SOUTHEAST
         else:
             #Throw custom error
+            print(r1, c1, r2, c2)
             raise Exception("ERROR: getDirection between two non-adjacent cells")
     else:
         if r1 - 1 == r2 and c1 - 1 == c2:
@@ -33,6 +34,7 @@ def getDirection(r1, c1, r2, c2):
             return SOUTHEAST
         else:
             #Throw custom error
+            print(r1, c1, r2, c2)
             raise Exception("ERROR: getDirection between two non-adjacent cells")
 
 
@@ -294,9 +296,15 @@ def getTravelCost(start,end):
     #thereby causing the pathing to take extra journeys over
     #roads that it doesn't need to take.
     cost = path_penalty
-    #If moving from water to water then movement is free
-    if start.isWater() and end.isWater():
-        pass
+    #If moving from water to water then add a minimal cost
+    if areBothWater(start,end):
+        #If moving from water to water and both are ports, add an even
+        #smaller cost. I have verified that this reduces the number of
+        #redundant ports.
+        if start.is_port and end.is_port:
+            cost += 1
+        else:
+            cost += 2
     #If moving from water to land then movement cost
     #is just the destination.
     elif start.isWater() and not end.isWater():
@@ -433,14 +441,12 @@ def setRoadImages(grid, port_east, port_west):
                             cell.road_image = road_images[i]
                             break
                 if cell.road_image == None:
-                    print('WARNING: no road image found for road with directions:',cell.road_directions)
+                    raise Exception('ERROR: no road image found for road with directions:',cell.road_directions)
 
 def handleWaterInPath(cell1,cell2,path):
     '''Pre: cell1 and cell2 are both water. Make both cells
     ports and find the next cell matching cell2 in the path
     and pop and return it.'''
-    cell1.is_port = True
-    cell2.is_port = True
     for k in range(len(path)):
         if path[k][0] == cell2:
             return path.pop(k)
@@ -469,9 +475,9 @@ def greedySearchPostProcessing(path, destination, grid):
     constructed with a greedy search.
     The goal below is to walk through path backwards
     painting roads only where they are needed.'''
-    finalized_path = []
     #The last cell in path should be the destination
     cell,direction = path.pop(len(path)-1)
+    finalized_path = [cell]
     #This if is needed so you can select paths that start
     #on water.
     if areBothWater(cell,direction):
@@ -497,25 +503,28 @@ def greedySearchPostProcessing(path, destination, grid):
             r = cell.row
             c = cell.col
             finalized_path.append(cell)
-        #reached destination
-        #TODO LEFT OFF HERE I put this in to stop an
-        #unrecognized direction error on the invertDirection
-        #line below, but it still pops up. I'm confused about
-        #why -1 is still a direction. Print some info on this
-        #and try to debug it.
-        #TODO This worked when I clicked between two cells,
-        #but not when drawing roads. Maybe I'm passing in
-        #the wrong cell to use as the "destination".
-        #TODO you should really rename "destination" since it's
-        #the starting point, not the ending point, except that
-        #we walk through the path backwards so from this function's
-        #point of view it IS the destination.
-        if grid[r][c] == destination:
+        #check if reached destination
+        if direction == -1:
             break
         #Use inverted direction to find next.
         direction = invertDirection(direction)
         r,c = cell.getRowCol(direction)
     return finalized_path
+
+def connectByRoad(path):
+    for k in range(len(path)-1):
+        #If they are both water, add ports
+        if areBothWater(path[k], path[k+1]):
+            path[k].is_port = True
+            path[k+1].is_port = True
+        else:
+            r1 = path[k].row
+            c1 = path[k].col
+            r2 = path[k+1].row
+            c2 = path[k+1].col
+            direction = getDirection(r1,c1,r2,c2)
+            path[k].addDirection(direction)
+            path[k+1].addDirection(invertDirection(direction))
 
 def calculateCityPaths(grid,city_locations,oceans):
     '''city_locations is a list of row,column pairs of
@@ -531,24 +540,17 @@ def calculateCityPaths(grid,city_locations,oceans):
                 print('WARNING: Pathing failed in map_generation.calculateCityPaths')
                 break
             finalized_path = greedySearchPostProcessing(path, city_locations[i], grid)
+
+            #TODO TESTING LEFT
+            #for cell in finalized_path:
+            #    cell.marked = (100,255,200)
+
             #lay down roads along the path
-            for i in range(1, len(finalized_path)-1):
-                r1 = finalized_path[i].row
-                c1 = finalized_path[i].col
-                r2 = finalized_path[i+1].row
-                c2 = finalized_path[i+1].col
-                direction = getDirection(r1, c1, r2, c2)
-                grid[r1][c1].addDirection(direction)
-                grid[r2][c2].addDirection(invertDirection(direction))
-                #TODO LEFT OFF HERE
-            #Then lay down ports and have ports reduce the path cost
-            #delete the other code that lays down ports. It's not needed anymore.
-
-
+            connectByRoad(finalized_path)
 
 def resetGrid(frames):
     print()
-    seed = random.randint(-2**16,2**16)#35937
+    seed = random.randint(-2**16,2**16)
     print('Seed:',seed)
     random.seed(seed)
     print('Creating grid')
