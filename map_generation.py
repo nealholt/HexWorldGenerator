@@ -2,6 +2,7 @@ from hexagon import *
 from image_processing import *
 from oceans import OceanManager
 pygame.init()
+import time
 
 
 def getDirection(r1, c1, r2, c2):
@@ -550,32 +551,54 @@ def resetGrid(frames):
     seed = random.randint(-2**16,2**16)#35937
     print('Seed:',seed)
     random.seed(seed)
+    print('Creating grid')
+    start_time = time.time()
     grid = createGrid()
+    elapsed = time.time()-start_time
+    print("Grid creation complete in ",elapsed,"seconds\nRandomizing terrain")
     #Add random extremes of temperature and elevation
+    start_time = time.time()
     randomizeTerrain(grid)
+    elapsed = time.time()-start_time
+    print("Terrain randomization complete in ",elapsed,"seconds\nSmoothing")
     #Use something like heat flow to run a smoothing pass then
     #determine images based on elevation and temperature.
+    start_time = time.time()
     smoothGrid(grid)
+    elapsed = time.time()-start_time
+    print("Smoothing complete in ",elapsed,"seconds\nPlanting trees")
     #Plant trees and spread them to neighboring cells
+    start_time = time.time()
     plantTrees(grid)
+    elapsed = time.time()-start_time
+    print("Tree planting complete in ",elapsed,"seconds\nPlancing cities")
     #Place cities
+    start_time = time.time()
     city_locations = []
     city_locations += placeCities(grid, level1_city_count, 1)
-    print('Level 1 cities placed.')
     city_locations += placeCities(grid, level2_city_count, 2)
-    print('Level 2 cities placed.')
     city_locations += placeCities(grid, level3_city_count, 3)
-    print('City placement complete.')
+    elapsed = time.time()-start_time
+    print("City placement complete in ",elapsed,"seconds\nCharting oceans")
     #Calculate cheapest paths between cities
+    start_time = time.time()
     water = OceanManager(grid)
     #water.testChartOceans()
+    elapsed = time.time()-start_time
+    print("Ocean charting complete in ",elapsed,"seconds\nPathing")
+    start_time = time.time()
     calculateCityPaths(grid,city_locations,water)
-    print('Pathing completed.')
+    elapsed = time.time()-start_time
+    print("Pathing complete in ",elapsed,"seconds\nDetermining images")
     #Finally set the images based on the elevation and temperature
+    start_time = time.time()
     setImages(grid, frames)
-    print('Set all images')
+    elapsed = time.time()-start_time
+    print("Image determination complete in ",elapsed,"seconds\nSetting road images")
     #Set road images
+    start_time = time.time()
     setRoadImages(grid, frames[port_east], frames[port_west])
-    print('Grid creation complete.')
+    elapsed = time.time()-start_time
+    print("Road images complete in ",elapsed,"seconds")
     return grid,water
 

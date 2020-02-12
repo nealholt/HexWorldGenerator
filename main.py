@@ -7,7 +7,9 @@ frames = strip_from_sheet()
 #Get the grid world of hexes
 grid,water = resetGrid(frames)
 background = pygame.Surface((1000,600))
+print('Drawing')
 drawGrid(grid,background)
+print('Drawing complete')
 original_background = background.copy()
 #Most recently clicked cell
 selected = None
@@ -26,7 +28,9 @@ while not done:
                 #Reset the world
                 grid,water=resetGrid(frames)
                 background = pygame.Surface((1000,600))
+                print('Drawing')
                 drawGrid(grid,background)
+                print('Drawing complete')
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 4: #Mouse wheel rolled away from body
                 background,scale=zoom(surface,original_background,False)
