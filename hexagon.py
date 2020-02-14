@@ -21,6 +21,8 @@ class Hexagon:
         #marked is set to a color or None. marked is used for
         #debugging road drawing and neighbor calculation
         self.marked = None
+        self.breadcrumb = None #Cal
+        self.running_total = 0 #Cal
 
     def getX(self,scale=100):
         image_width = self.img.get_rect().width

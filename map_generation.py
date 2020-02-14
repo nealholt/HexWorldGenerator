@@ -548,6 +548,85 @@ def calculateCityPaths(grid,city_locations,oceans):
             #lay down roads along the path
             connectByRoad(finalized_path)
 
+
+'''Cal:'''
+def DJsPath(starting_cell, ending_cell, grid, ocean):
+    #This list will contain the cells which are currently being used. Each one
+    #will act as a breadcrumb for the next cells and should already have a
+    #breadcrumb.
+    #Returns a path list filled with hexagons.
+    pathing_cells = [starting_cell]
+
+    allowed_cost = 0
+
+    while ending_cell not in pathing_cells:
+        allowed_cost += 1
+
+        for cell in reversed(pathing_cells):
+            neighbors = getPathableNeighbors(cell, grid, ocean)
+
+            #print(neighbors)
+
+            for n in neighbors:
+                new = n[0]
+                if new.breadcrumb == None:
+                    cost = getTravelCost(cell, new)
+                    #print(cost)
+                    if allowed_cost >= cell.running_total + cost:
+                        new.breadcrumb = cell
+                        new.running_total = cell.running_total + cost
+                        pathing_cells.append(new)
+
+        for cell in reversed(pathing_cells):
+            if removeIfUseless(getHexNeighbors(cell.row, cell.col), grid, pathing_cells):
+                pathing_cells.remove(cell)
+
+    new_cell = ending_cell
+
+    path = []
+
+    while new_cell != starting_cell:
+        path.append(new_cell)
+        new_cell = new_cell.breadcrumb
+
+    return path
+
+'''Cal:'''
+def removeIfUseless(neighbors, grid, pathing_cells):
+    for n in neighbors:
+        new = grid[n[0]][n[1]]
+        if new not in pathing_cells:
+            return False
+
+    return True
+
+'''Cal:'''
+def testMarkRoads(grid):
+    first_hexagon = grid[0][0]
+    last_hexagon = grid[-1][-1]
+
+    first_hexagon.marked = (100, 0, 0)
+    last_hexagon.marked = (100, 0, 0)
+
+    li1 = [1, 2, 1, -2, -3, -2]
+    li2 = [0, 0, 1, -1, -1, -2]
+    for a in range(len(li1)):
+        test = grid[li1[a]][li2[a]]
+        test.marked = (0, (a * 25), 0)
+
+        if a < 3:
+            print(getDirection(first_hexagon.row, first_hexagon.col, test.row, test.col))
+        else:
+            print(getDirection(last_hexagon.row, last_hexagon.col, test.row, test.col))
+
+'''Cal: Cleanup breadcrumbs used for pathing.'''
+def removeBreadcrumbs(grid):
+    for li in grid:
+        for hex in li:
+            hex.breadcrumb = None
+
+
+
 def resetGrid(frames):
     print()
     seed = random.randint(-2**16,2**16)
