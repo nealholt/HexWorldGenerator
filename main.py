@@ -8,7 +8,7 @@ surface = pygame.display.set_mode((1000,600))
 #Get all the hex tile images
 frames = strip_from_sheet()
 #Get the grid world of hexes
-grid,water = resetGrid(frames)
+grid,_ = resetGrid(frames)
 background = pygame.Surface((1000,600))
 print('Drawing')
 drawGrid(grid,background)
@@ -24,7 +24,7 @@ scroll_down = False
 scroll_left = False
 scroll_right = False
 
-done=False
+done = False
 while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -35,7 +35,7 @@ while not done:
                 done = True
             elif event.key == 32: #Space bar
                 #Reset the world
-                grid,water=resetGrid(frames)
+                grid,_ = resetGrid(frames)
                 background = pygame.Surface((1000,600))
                 print('Drawing')
                 drawGrid(grid,background)
@@ -48,12 +48,12 @@ while not done:
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 4: #Mouse wheel rolled away from body
-                background,scale=zoom(surface,original_background,False)
+                background,scale = zoom(surface,original_background,False)
             elif event.button == 5: #Mouse wheel rolled towards body
-                background,scale=zoom(surface,original_background,True)
+                background,scale = zoom(surface,original_background,True)
             else: #Left or right mouse click
                 pos = pygame.mouse.get_pos()
-                selected = markClicked(pos,grid,water,selected,scale)
+                selected = markClicked(pos,grid,selected,scale)
 
     if scroll_up:
         vertical_adjust += 1

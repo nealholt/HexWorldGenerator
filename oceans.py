@@ -2,9 +2,9 @@ from functions import outOfBounds,resetMarked
 from constants import DIRECTIONS,NORTH,SOUTH
 
 def getPotentialDocks(row,col,grid,visited):
-    '''return list of water tile row,cols that border land to
+    """return list of water tile row,cols that border land to
     the east or west and are reachable from this tile. Don't
-    revisit cells in visited.'''
+    revisit cells in visited."""
     docks = []
     visited.append((row,col))
     for direction in DIRECTIONS:
@@ -35,8 +35,8 @@ class OceanManager:
         print('Total number of bodies of water is ',len(self.water))
 
     def chartOceans(self):
-        '''Save time by pre-charting all the oceans and their
-        coasts.'''
+        """Save time by pre-charting all the oceans and their
+        coasts."""
         visited = []
         oceans = []
         for row in range(len(self.grid)):
@@ -50,7 +50,7 @@ class OceanManager:
         return oceans
 
     def testChartOceans(self):
-        '''Mark all ocean tiles and all coastal tiles'''
+        """Mark all ocean tiles and all coastal tiles"""
         resetMarked(self.grid)
         for row in range(len(self.grid)):
             for col in range(len(self.grid[row])):
@@ -63,7 +63,7 @@ class OceanManager:
                         break
 
     def getDocks(self,row,col):
-        '''Returns all dock tiles reachable by row,col.'''
+        """Returns all dock tiles reachable by row,col."""
         for i in range(len(self.water)):
             if (row,col) in self.water[i]:
                 return self.coastal[i]

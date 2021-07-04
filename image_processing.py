@@ -40,16 +40,17 @@ def load_image(name, colorkey=None):
         #be used as transparency color.
         if colorkey is -1:
             colorkey = image.get_at((0,0))
-        '''The optional flags argument can be set to pygame.RLEACCEL to provide better performance on non accelerated displays. An RLEACCEL Surface will be slower to modify, but quicker to blit as a source.'''
+        '''The optional flags argument can be set to pygame.RLEACCEL to provide better performance on non accelerated 
+        displays. An RLEACCEL Surface will be slower to modify, but quicker to blit as a source. '''
         image.set_colorkey(colorkey, pygame.RLEACCEL)
     #Return the image and its rectangle
     return image, image.get_rect()
 
 
 def strip_from_sheet():
-    '''Strips individual frames from specific sprite sheet.
+    """Strips individual frames from specific sprite sheet.
     This function has been modified oddly to work with this
-    particular quirky sprite sheet.'''
+    particular quirky sprite sheet."""
     sheet,_ = load_image('images/UECvRdS_copy.png', -1)
     r = sheet.get_rect()
     rows = 10
@@ -65,9 +66,9 @@ def strip_from_sheet():
 
 
 def strip_roads_from_sheet():
-    '''Strips individual frames from specific sprite sheet.
+    """Strips individual frames from specific sprite sheet.
     This function has been modified oddly to work with this
-    particular quirky sprite sheet.'''
+    particular quirky sprite sheet."""
     sheet,_ = load_image('images/roads_and_rivers.png', -1)
 
     r = sheet.get_rect()
@@ -112,7 +113,7 @@ def drawGrid(grid,surface):
             col.drawExtras(surface)
 
 
-def drawMarkings(grid,surface,scale, x_adjust=0, y_adjust=0):
+def drawMarkings(grid,surface,scale_val, x_adjust=0, y_adjust=0):
     for row in grid:
         for col in row:
-            col.drawMarkings(surface,scale, x_adjust, y_adjust)
+            col.drawMarkings(surface,scale_val, x_adjust, y_adjust)
