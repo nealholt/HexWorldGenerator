@@ -91,16 +91,18 @@ class Hexagon:
         height = int((w-hex_box_adjust)*scale/100)
         return Rect(x,y,width,height)
 
-    def drawMarkings(self,surface,scale):
+    def drawMarkings(self,surface,scale, x_adjust=0, y_adjust=0):
         if self.selected:
             #Draw a rectangle that matches the hitbox
             r = self.getRect(scale)
+            r.centerx += x_adjust
+            r.centery += y_adjust
             draw.rect(surface, (255,0,0), r, 3)
         if self.marked != None:
             #Draw a circle on this hexagon
             radius = int((x_offset/2)*scale/100)
-            center = int(hex_box_adjust*scale/100+self.getX(scale)+radius), \
-                    int(hex_box_adjust*scale/100+self.getY(scale)+radius+height_adjust*scale/100)
+            center = int(hex_box_adjust*scale/100+self.getX(scale)+radius)+x_adjust, \
+                    int(hex_box_adjust*scale/100+self.getY(scale)+radius+height_adjust*scale/100)+y_adjust
             draw.circle(surface, self.marked, center, radius, 3)
 
 

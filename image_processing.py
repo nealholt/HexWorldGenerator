@@ -112,7 +112,7 @@ def drawGrid(grid,surface):
             col.drawExtras(surface)
 
 
-def drawMarkings(grid,surface,scale):
+def drawMarkings(grid,surface,scale, x_adjust=0, y_adjust=0):
     for row in grid:
         for col in row:
-            col.drawMarkings(surface,scale)
+            col.drawMarkings(surface,scale, x_adjust, y_adjust)
