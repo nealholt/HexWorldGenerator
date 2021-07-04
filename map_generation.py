@@ -1,16 +1,15 @@
 from hexagon import *
 from image_processing import *
 from oceans import OceanManager
-pygame.init()
 import time
-
+pygame.init()
 
 def getDirection(r1, c1, r2, c2):
     if r1 - 2 == r2 and c1 == c2:
         return NORTH
     elif r1 + 2 == r2 and c1 == c2:
         return SOUTH
-    elif r1%2 == 0:
+    elif r1 % 2 == 0:
         if r1 - 1 == r2 and c1 == c2:
             return NORTHWEST
         elif r1 - 1 == r2 and c1 + 1 == c2:
@@ -64,8 +63,8 @@ def plantCountTrees(grid, count, level):
     return forest_locations
 
 def forestSpread(grid,row,col,countdown):
-    '''Recursively spread foliage.
-    countdown is a limit on the amount of recursion.'''
+    """Recursively spread foliage.
+    countdown is a limit on the amount of recursion."""
     countdown -= 1
     if countdown < 0:
         return
@@ -80,15 +79,15 @@ def forestSpread(grid,row,col,countdown):
         cell = grid[row][col]
         #Only spread to neighbors with foliage levels lower than
         #current cell's value and lower than max
-        if cell.foliage<spreadee_level and cell.foliage<max_foliage:
+        if cell.foliage < spreadee_level and cell.foliage < max_foliage:
             cell.foliage += 1
             forestSpread(grid,row,col,countdown)
 
 def plantTrees(grid):
-    '''This function changes random grid cells to forest and
+    """This function changes random grid cells to forest and
     randomly spreads those forest values. Oceans and mountains
     and extreme deserts are skipped.
-    This should be called AFTER smoothing has occurred.'''
+    This should be called AFTER smoothing has occurred."""
     #Plant deep forests
     count = random.randint(min_deep_foliage,max_deep_foliage)
     forest_locations = plantCountTrees(grid, count, max_foliage)
@@ -112,18 +111,18 @@ def placeCities(grid, count, level):
         #No ocean cities or cities in same location as other cities
         limit = 100 #Avoid possible infinite looping on small maps
         count = 0
-        while (cell.elevation<shallows_cutoff or cell.city_level!=0) and count<limit:
+        while (cell.elevation < shallows_cutoff or cell.city_level != 0) and count < limit:
             row,col = getRandomRowCol()
             cell = grid[row][col]
-            count+=1
-        if count<limit:
+            count += 1
+        if count < limit:
             cell.city_level = level
             cities.append((row,col))
     return cities
 
 def randomizeTerrain(grid):
-    '''This function sprinkles in a random number of randomly
-    located extreme temperature and elevation values.'''
+    """This function sprinkles in a random number of randomly
+    located extreme temperature and elevation values."""
     #Sprinkle in random high elevations
     count = random.randint(0,elevation_high_count)
     print('High elevation count: ',count)
@@ -249,7 +248,7 @@ def shortPathHelper(grid,upcoming,r_end,c_end):
     return index
 
 def getPathableNeighbors(cell,grid,oceans):
-    '''This is a helper function for calcShortestPath that
+    """This is a helper function for calcShortestPath that
     retrieves neighboring cells of the given cell. This
     operation is complicated by the special way we want to
     treat water such that any water cell is reachable
@@ -260,51 +259,31 @@ def getPathableNeighbors(cell,grid,oceans):
 
     The neighbor_list returned will either be full of
     cell,None tuples in the case of water, or be full of
-    cell,direction tuples in the case of land.'''
+    cell,direction tuples in the case of land."""
     neighbor_list = []
-    if cell.isWater():
-        #get all land-bordering tiles reachable from this
-        #water with east or west opening docks.
-        temp = oceans.getDocks(cell.row,cell.col)
-        for r,c in temp:
-            neighbor_list.append((grid[r][c],None))
-        #Also get all land cells immediately adjacent to
-        #this water to the east or west
-        for direction in DIRECTIONS:
-            rn,cn = cell.getRowCol(direction)
-            #Skip out of bounds cells, water cells, and cells to
-            #the north or south
-            if direction not in [NORTH,SOUTH] and not(outOfBounds(rn,cn)) and not(grid[rn][cn].isWater()):
+    for direction in DIRECTIONS:
+        rn,cn = cell.getRowCol(direction)
+        #Skip out of bounds cells
+        if not(outOfBounds(rn,cn)):
+            #If it's not water or it's water reachable to the east or west
+            if not grid[rn][cn].isWater() or direction not in [NORTH,SOUTH]:
                 neighbor_list.append((grid[rn][cn],direction))
-    else:
-        for direction in DIRECTIONS:
-            rn,cn = cell.getRowCol(direction)
-            #Skip out of bounds cells
-            if not(outOfBounds(rn,cn)):
-                #If it's not water or it's water reachable to the east or west
-                if not grid[rn][cn].isWater() or direction not in [NORTH,SOUTH]:
-                    neighbor_list.append((grid[rn][cn],direction))
     return neighbor_list
 
 def getTravelCost(start,end):
-    '''start and end are both cells. Return the cost to
+    """start and end are both cells. Return the cost to
     travel from start to end. Order matters. The cost of
-    start,end is not necessarilly the same as the cost
-    of end,start.'''
-    #This initial penalty is needed so that the cost reduction
-    #from traveling over roads doesn't make the cost negative
-    #thereby causing the pathing to take extra journeys over
-    #roads that it doesn't need to take.
+    start,end is not necessarily the same as the cost
+    of end,start."""
+
+    """This initial penalty is needed so that the cost reduction
+    from traveling over roads doesn't make the cost negative
+    thereby causing the pathing to take extra journeys over
+    roads that it doesn't need to take."""
     cost = path_penalty
     #If moving from water to water then add a minimal cost
     if areBothWater(start,end):
-        #If moving from water to water and both are ports, add an even
-        #smaller cost. I have verified that this reduces the number of
-        #redundant ports.
-        if start.is_port and end.is_port:
-            cost += 1
-        else:
-            cost += 2
+        cost += 2
     #If moving from water to land then movement cost
     #is just the destination.
     elif start.isWater() and not end.isWater():
@@ -326,8 +305,7 @@ def getTravelCost(start,end):
 
 
 def calcShortestPath(coords1,coords2,grid,oceans):
-    '''Do a greedy search to find shortest path.
-    Don't path through water for now.
+    """Do a greedy search to find shortest path.
     This function does not return a list of hexagons.
     Instead it returns a list of hexagon,direction
     pairs, but not all of these pairs are actually
@@ -336,7 +314,7 @@ def calcShortestPath(coords1,coords2,grid,oceans):
     the actual path and remove extraneous hexes.
     In other words, this function returns all the
     hex,direction pairs that were used in the greedy
-    search.'''
+    search."""
     r,c = coords1 #Starting location
     r_end,c_end = coords2 #ending_location
     path = [] #Store best path
@@ -378,16 +356,12 @@ def calcShortestPath(coords1,coords2,grid,oceans):
             distance_cost = getHexDistance(destination.row,destination.col,r_end,c_end)*dist_cost
             #Factor terrain and water into the total cost
             total_cost += getTravelCost(cell,destination)
-            #If moving from water to water then use the source cell
-            #instead of a direction since direction is irrelevant.
-            if cell.isWater() and destination.isWater():
-                direction = cell
             upcoming.append((destination.row,destination.col,total_cost,direction,distance_cost))
     print('Warning: Failed to find path in calcShortestPath(',coords1,',',coords2,')')
     return []
 
 def invertDirection(direction):
-    '''Return the opposite of the given direction.'''
+    """Return the opposite of the given direction."""
     if direction == NORTH:
         return SOUTH
     elif direction == SOUTH:
@@ -402,17 +376,19 @@ def invertDirection(direction):
         return NORTHWEST
     else:
         #Throw custom error
-        raise Exception('ERROR: Unrecognized direction ',direction,' in map_generation.invertDirection')
+        raise Exception('ERROR: Unrecognized direction ', direction, ' in map_generation.invertDirection')
 
 def setPortImage(grid, cell, port_east, port_west):
-    '''Determine if cell's port should open to the east or west.
-    If port borders a city, there won't necessarilly be a road
-    headed into the port so also check if there's a city.'''
-    r,c=cell.getRowCol(NORTHWEST)
-    r2,c2=cell.getRowCol(SOUTHWEST)
-    if not(outOfBounds(r,c)) and (grid[r][c].city_level > 0 or (not grid[r][c].isWater() and SOUTHEAST in grid[r][c].road_directions)):
+    """Determine if cell's port should open to the east or west.
+    If port borders a city, there won't necessarily be a road
+    headed into the port so also check if there's a city."""
+    r, c = cell.getRowCol(NORTHWEST)
+    r2, c2 = cell.getRowCol(SOUTHWEST)
+    if not(outOfBounds(r, c)) and (grid[r][c].city_level > 0 or (not grid[r][c].isWater() and
+                                                                 SOUTHEAST in grid[r][c].road_directions)):
         cell.img = port_east
-    elif not(outOfBounds(r2,c2)) and (grid[r2][c2].city_level > 0 or (not grid[r2][c2].isWater() and NORTHEAST in grid[r2][c2].road_directions)):
+    elif not(outOfBounds(r2, c2)) and (grid[r2][c2].city_level > 0 or
+                                (not grid[r2][c2].isWater() and NORTHEAST in grid[r2][c2].road_directions)):
         cell.img = port_east
     else:
         cell.img = port_west
@@ -443,16 +419,6 @@ def setRoadImages(grid, port_east, port_west):
                 if cell.road_image == None:
                     raise Exception('ERROR: no road image found for road with directions:',cell.road_directions)
 
-def handleWaterInPath(cell1,cell2,path):
-    '''Pre: cell1 and cell2 are both water. Make both cells
-    ports and find the next cell matching cell2 in the path
-    and pop and return it.'''
-    for k in range(len(path)):
-        if path[k][0] == cell2:
-            return path.pop(k)
-    raise Exception('cell not found')
-
-
 def areBothWater(a,b):
     try:
         return a.isWater() and b.isWater()
@@ -460,31 +426,24 @@ def areBothWater(a,b):
         return False
 
 def greedySearchPostProcessing(path, destination, grid):
-    '''Pre: path is a list of hex,direction pairs.
+    """Pre: path is a list of hex,direction pairs.
     destination is a hex.
     grid is the 2d list of all hexes.
     Post: This function pares down the path list from
     calcShortestPath into a list of hexes, in order,
     on the path from one place to another. The list of
-    hexes is returned.'''
+    hexes is returned."""
 
-    '''path is a list of cell,direction pairs. start
+    """path is a list of cell,direction pairs. start
     with last item in path, but don't use it. follow
     inverse directions back through cells in the path.
     path contains more than we need because it's
     constructed with a greedy search.
     The goal below is to walk through path backwards
-    painting roads only where they are needed.'''
+    painting roads only where they are needed."""
     #The last cell in path should be the destination
     cell,direction = path.pop(len(path)-1)
     finalized_path = [cell]
-    #This if is needed so you can select paths that start
-    #on water.
-    if areBothWater(cell,direction):
-        cell,direction = handleWaterInPath(cell,direction,path)
-        r = cell.row
-        c = cell.col
-        finalized_path.append(cell)
     #Invert direction to find the next cell to travel to
     direction = invertDirection(direction)
     #r,c are the row,col of the next cell to travel to
@@ -497,12 +456,6 @@ def greedySearchPostProcessing(path, destination, grid):
                 cell,direction = path.pop(k)
                 finalized_path.append(cell)
                 break
-        #While they are both water, keep popping.
-        if areBothWater(cell,direction):
-            cell,direction = handleWaterInPath(cell,direction,path)
-            r = cell.row
-            c = cell.col
-            finalized_path.append(cell)
         #check if reached destination
         if direction == -1:
             break
@@ -527,9 +480,9 @@ def connectByRoad(path):
             path[k+1].addDirection(invertDirection(direction))
 
 def calculateCityPaths(grid,city_locations,oceans):
-    '''city_locations is a list of row,column pairs of
+    """city_locations is a list of row,column pairs of
     city locations on the grid.
-    Calculate all pairs shortest paths.'''
+    Calculate all pairs shortest paths."""
     #Loop through each city and recurse
     for i in range(len(city_locations)-1):
         for j in range(i+1,len(city_locations)):

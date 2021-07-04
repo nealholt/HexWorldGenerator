@@ -4,3 +4,4 @@
 *.pyc
 __pycache__/hexagon.cpython-37.pyc
 __pycache__/map_generation.cpython-37.pyc
+*.pyc
