@@ -272,8 +272,13 @@ def getPathableNeighbors(cell, grid):
         rn, cn = cell.getRowCol(direction)
         # Skip out of bounds cells
         if not (outOfBounds(rn, cn)):
-            # If it's not water or it's water reachable to the east or west
-            if not grid[rn][cn].isWater() or direction not in [NORTH, SOUTH]:
+            # If cell is a water cell and neighbor is a water cell or neighbor is to the east or west,
+            # then add neighbor. There's no north and south opening port images so we don't use those.
+            if cell.isWater() and (grid[rn][cn].isWater() or direction not in [NORTH, SOUTH]):
+                neighbor_list.append((grid[rn][cn], direction))
+            # If cell is land and neighbor is not water or neighbor is reachable to the east or west,
+            # then add neighbor. There's no north and south opening port images so we don't use those.
+            elif not grid[rn][cn].isWater() or direction not in [NORTH, SOUTH]:
                 neighbor_list.append((grid[rn][cn], direction))
     return neighbor_list
 
@@ -385,6 +390,7 @@ def invertDirection(direction):
         return NORTHWEST
     else:
         # Throw custom error
+        print(direction)
         raise Exception('ERROR: Unrecognized direction ', direction, ' in map_generation.invertDirection')
 
 
