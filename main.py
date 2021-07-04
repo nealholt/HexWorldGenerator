@@ -14,6 +14,12 @@ original_background = background.copy()
 #Most recently clicked cell
 selected = None
 
+vertical_adjust = 0
+horizontal_adjust = 0
+scroll_up = False
+scroll_down = False
+scroll_left = False
+scroll_right = False
 
 done=False
 while not done:
@@ -21,7 +27,7 @@ while not done:
         if event.type == pygame.QUIT:
             done = True
         elif event.type == pygame.KEYDOWN:
-            #print(event.key)
+            print(event.key)
             if event.key == pygame.K_ESCAPE:
                 done = True
             elif event.key == 32: #Space bar
@@ -31,6 +37,12 @@ while not done:
                 print('Drawing')
                 drawGrid(grid,background)
                 print('Drawing complete')
+
+            scroll_up = event.key == 273 or event.key == 119
+            scroll_down = event.key == 274 or event.key == 115
+            scroll_left = event.key == 276 or event.key == 97
+            scroll_right = event.key == 275 or event.key == 100
+
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 4: #Mouse wheel rolled away from body
                 background,scale=zoom(surface,original_background,False)
@@ -40,7 +52,16 @@ while not done:
                 pos = pygame.mouse.get_pos()
                 selected = markClicked(pos,grid,water,selected,scale)
 
-    surface.blit(background, (0, 0))
+    if scroll_up:
+        vertical_adjust += 1
+    elif scroll_down:
+        vertical_adjust -= 1
+    if scroll_right:
+        horizontal_adjust -= 1
+    elif scroll_left:
+        horizontal_adjust += 1
+
+    surface.blit(background, (horizontal_adjust, vertical_adjust))
     drawMarkings(grid,surface,scale)
     pygame.display.flip()
     clock.tick(10)

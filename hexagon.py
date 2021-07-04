@@ -1,6 +1,5 @@
 from pygame import draw, Rect, quit
 from functions import *
-from constants import scale, directionToEnglish
 
 class Hexagon:
     def __init__(self, row, col, elevation, temperature):
