@@ -1,4 +1,6 @@
-from map_generation import *
+from map_generation import strip_from_sheet, drawGrid, resetGrid, markClicked, zoom, drawMarkings
+from constants import scale
+import pygame
 clock = pygame.time.Clock()
 surface = pygame.display.set_mode((1000,600))
 
@@ -64,5 +66,5 @@ while not done:
     surface.blit(background, (horizontal_adjust, vertical_adjust))
     drawMarkings(grid,surface,scale)
     pygame.display.flip()
-    clock.tick(10)
+    clock.tick(30)
 pygame.quit()
