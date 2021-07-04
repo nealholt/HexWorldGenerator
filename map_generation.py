@@ -283,6 +283,23 @@ def getPathableNeighbors(cell, grid):
     return neighbor_list
 
 
+def reachableNeighborsAreWater(cell, grid):
+    """Returns true if all the reachable neighbors from cell
+    are water cells. This is used to not draw ports on open
+    water. Land to the north or south is not reachable from
+    water because there're no north and south opening port
+    images."""
+    for direction in DIRECTIONS:
+        rn, cn = cell.getRowCol(direction)
+        # Skip out of bounds cells
+        if not (outOfBounds(rn, cn)):
+            # If neighbor is not a water cell and direction is to the east or west,
+            # then this cell is not "surrounded by water"
+            if not grid[rn][cn].isWater() and direction not in [NORTH, SOUTH]:
+                return False
+    return True
+
+
 def getTravelCost(start, end):
     """start and end are both cells. Return the cost to
     travel from start to end. Order matters. The cost of
@@ -481,12 +498,15 @@ def greedySearchPostProcessing(path, destination, grid):
     return finalized_path
 
 
-def connectByRoad(path):
+def connectByRoad(grid, path):
     for k in range(len(path) - 1):
-        # If they are both water, add ports
+        # If they are both water...
         if areBothWater(path[k], path[k + 1]):
-            path[k].is_port = True
-            path[k + 1].is_port = True
+            # Only add ports to cells not surrounded by water
+            if not reachableNeighborsAreWater(path[k], grid):
+                path[k].is_port = True
+            if not reachableNeighborsAreWater(path[k + 1], grid):
+                path[k + 1].is_port = True
         else:
             r1 = path[k].row
             c1 = path[k].col
@@ -517,7 +537,7 @@ def calculateCityPaths(grid, city_locations):
             #    cell.marked = (100,255,200)
 
             # lay down roads along the path
-            connectByRoad(finalized_path)
+            connectByRoad(grid, finalized_path)
 
 
 '''Cal:'''
@@ -610,7 +630,7 @@ def removeBreadcrumbs(grid):
 
 def resetGrid(frames):
     print()
-    seed = random.randint(-2 ** 16, 2 ** 16)
+    seed = -19445 #random.randint(-2 ** 16, 2 ** 16)
     print('Seed:', seed)
     random.seed(seed)
     print('Creating grid')
